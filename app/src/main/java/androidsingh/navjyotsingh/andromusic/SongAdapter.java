@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ import java.util.ArrayList;
 
 public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongHolder> {
 
-    private ArrayList<SongInfo> _songs = new ArrayList<SongInfo>();
+    private ArrayList<SongInfo> _songs = new ArrayList<>();
     private Context context;
     private OnItemClickListener mOnItemClickListener;
 
@@ -23,7 +24,7 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongHolder> {
     }
 
     public interface OnItemClickListener {
-        void onItemClick(Button b ,View view, SongInfo obj, int position);
+        void onItemClick(LinearLayout layout ,View view, SongInfo obj, int position);
     }
 
     public void setOnItemClickListener(final OnItemClickListener mItemClickListener) {
@@ -42,12 +43,13 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongHolder> {
         final SongInfo s = _songs.get(i);
         songHolder.tvSongName.setText(_songs.get(i).getSongname());
         songHolder.tvSongArtist.setText(_songs.get(i).getArtistname());
-        songHolder.btnAction.setOnClickListener(new View.OnClickListener() {
+
+        songHolder.linearLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mOnItemClickListener != null) {
-                    mOnItemClickListener.onItemClick(songHolder.btnAction,v, s, i);
-                }
+                    if (mOnItemClickListener != null){
+                        mOnItemClickListener.onItemClick(songHolder.linearLayout,v,s,i);
+                    }
             }
         });
     }
@@ -58,13 +60,13 @@ public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongHolder> {
     }
 
     public class SongHolder extends RecyclerView.ViewHolder {
+        public LinearLayout linearLayout;
         TextView tvSongName,tvSongArtist;
-        Button btnAction;
         public SongHolder(View itemView) {
             super(itemView);
             tvSongName =  itemView.findViewById(R.id.tvSongName);
             tvSongArtist =  itemView.findViewById(R.id.tvArtistName);
-            btnAction =  itemView.findViewById(R.id.btnPlay);
+            linearLayout= itemView.findViewById(R.id.linerLayoutSong);
         }
     }
 }

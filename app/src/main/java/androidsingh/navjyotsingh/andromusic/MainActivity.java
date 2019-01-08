@@ -23,6 +23,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
@@ -32,7 +33,7 @@ import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ArrayList<SongInfo> _songs = new ArrayList<SongInfo>();;
+    private ArrayList<SongInfo> _songs = new ArrayList<>();
     RecyclerView recyclerView;
     SongAdapter songAdapter;
     MediaPlayer mediaPlayer;
@@ -68,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
         playPauseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isPlaying==false){
+                if (!isPlaying){
                     playMe();
                     isPlaying=true;
                     playPauseButton.setBackgroundResource(R.drawable.pause);
@@ -87,34 +88,6 @@ public class MainActivity extends AppCompatActivity {
         timeline=findViewById(R.id.timeline);
         timeline.setMax(mediaPlayer.getDuration());
 
-//        timeline.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-//            @Override
-//            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-//               if (fromUser)
-//                   mediaPlayer.seekTo(progress);
-//            }
-//
-//            @Override
-//            public void onStartTrackingTouch(SeekBar seekBar) {
-//
-//            }
-//
-//            @Override
-//            public void onStopTrackingTouch(SeekBar seekBar) {
-//
-//            }
-//        });
-
-
-//        new Timer().scheduleAtFixedRate(new TimerTask() {
-//            @Override
-//            public void run() {
-//                timeline.setProgress(mediaPlayer.getCurrentPosition());
-//            }
-//        }, 0, 1000);
-
-
-
         recyclerView.setAdapter(songAdapter);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(),
@@ -123,71 +96,66 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.addItemDecoration(dividerItemDecoration);
         songAdapter.setOnItemClickListener(new SongAdapter.OnItemClickListener() {
             @Override
-            public void onItemClick(final Button b, View view, final SongInfo obj, int position) {
-                if(b.getBackground().equals(R.drawable.pause)){
-                    mediaPlayer.stop();
-                    mediaPlayer.reset();
-                    mediaPlayer.release();
-                    mediaPlayer = null;
-                    b.setBackgroundResource(R.drawable.play);
-                    isPlaying = false;
-                    playPauseButton.setBackgroundResource(R.drawable.play);
+            public void onItemClick(final LinearLayout layout, View view, final SongInfo obj, int position) {
+                Runnable runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            if (mediaPlayer.isPlaying()) {
+                                mediaPlayer.stop();
+                                mediaPlayer.release();
+                            }
+                            mediaPlayer = new MediaPlayer();
 
-                }else {
+                            mediaPlayer.setDataSource(obj.getSongUrl());
+                            mediaPlayer.prepareAsync();
 
-                    Runnable runnable = new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                mediaPlayer = new MediaPlayer();
-                                mediaPlayer.setDataSource(obj.getSongUrl());
-                                mediaPlayer.prepareAsync();
-                                mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                                    @Override
-                                    public void onPrepared(MediaPlayer mp) {
-                                        mp.start();
-                                        timeline.setProgress(0);
-                                        timeline.setMax(mediaPlayer.getDuration());
-                                        timeline.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                                            @Override
-                                            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                                                if (fromUser)
-                                                    mediaPlayer.seekTo(progress);
-                                            }
+                            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                                @Override
+                                public void onPrepared(MediaPlayer mp) {
+                                    mp.start();
+                                    timeline.setProgress(0);
+                                    timeline.setMax(mediaPlayer.getDuration());
+                                    timeline.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                                        @Override
+                                        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                                            if (fromUser)
+                                                mediaPlayer.seekTo(progress);
+                                        }
 
-                                            @Override
-                                            public void onStartTrackingTouch(SeekBar seekBar) {
+                                        @Override
+                                        public void onStartTrackingTouch(SeekBar seekBar) {
 
-                                            }
+                                        }
 
-                                            @Override
-                                            public void onStopTrackingTouch(SeekBar seekBar) {
+                                        @Override
+                                        public void onStopTrackingTouch(SeekBar seekBar) {
 
-                                            }
-                                        });
-                                        Log.d("Prog", "run: " + mediaPlayer.getDuration());
-                                        isPlaying = true;
-                                        playPauseButton.setBackgroundResource(R.drawable.pause);
+                                        }
+                                    });
+                                    Log.d("Prog", "run: " + mediaPlayer.getDuration());
+                                    isPlaying = true;
+                                    playPauseButton.setBackgroundResource(R.drawable.pause);
 
-                                    }
-                                });
-                                b.setBackgroundResource(R.drawable.pause);
+                                }
+                            });
 
 
 
-                            }catch (Exception e){}
-                        }
 
-                    };
-                    myHandler.postDelayed(runnable,100);
+                        }catch (Exception e){}
+                    }
 
-                }
+                };
+                myHandler.postDelayed(runnable,100);
+
             }
         });
         checkUserPermission();
 
         Thread t = new runThread();
         t.start();
+
 
     }
     public class runThread extends Thread {
