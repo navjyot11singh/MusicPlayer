@@ -10,7 +10,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-
+//By Navjyot singh
+//navjyot11singh Github
 
 public class SongAdapter extends RecyclerView.Adapter<SongAdapter.SongHolder> {
 

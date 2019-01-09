@@ -3,6 +3,7 @@ package androidsingh.navjyotsingh.andromusic;
 import android.Manifest;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.media.AudioManager;
@@ -27,9 +28,13 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
+
+//By Navjyot singh
+//navjyot11singh Github
 
 public class MainActivity extends AppCompatActivity {
 
@@ -42,6 +47,8 @@ public class MainActivity extends AppCompatActivity {
      boolean isPlaying = false;
     private Handler myHandler = new Handler();
     SeekBar timeline;
+    int positionOfLastSong=0;
+
 
 
 
@@ -97,57 +104,8 @@ public class MainActivity extends AppCompatActivity {
         songAdapter.setOnItemClickListener(new SongAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(final LinearLayout layout, View view, final SongInfo obj, int position) {
-                Runnable runnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            if (mediaPlayer.isPlaying()) {
-                                mediaPlayer.stop();
-                                mediaPlayer.release();
-                            }
-                            mediaPlayer = new MediaPlayer();
 
-                            mediaPlayer.setDataSource(obj.getSongUrl());
-                            mediaPlayer.prepareAsync();
-
-                            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                                @Override
-                                public void onPrepared(MediaPlayer mp) {
-                                    mp.start();
-                                    timeline.setProgress(0);
-                                    timeline.setMax(mediaPlayer.getDuration());
-                                    timeline.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                                        @Override
-                                        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                                            if (fromUser)
-                                                mediaPlayer.seekTo(progress);
-                                        }
-
-                                        @Override
-                                        public void onStartTrackingTouch(SeekBar seekBar) {
-
-                                        }
-
-                                        @Override
-                                        public void onStopTrackingTouch(SeekBar seekBar) {
-
-                                        }
-                                    });
-                                    Log.d("Prog", "run: " + mediaPlayer.getDuration());
-                                    isPlaying = true;
-                                    playPauseButton.setBackgroundResource(R.drawable.pause);
-
-                                }
-                            });
-
-
-
-
-                        }catch (Exception e){}
-                    }
-
-                };
-                myHandler.postDelayed(runnable,100);
+                mediaPlayerSongPlay(position,Uri.parse(obj.getSongUrl()));
 
             }
         });
@@ -155,6 +113,80 @@ public class MainActivity extends AppCompatActivity {
 
         Thread t = new runThread();
         t.start();
+
+
+    }
+    public void mediaPlayerSongPlay(int position,final Uri songUri)
+    {
+        positionOfLastSong=position;
+
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if (mediaPlayer.isPlaying()) {
+                        mediaPlayer.stop();
+                        mediaPlayer.release();
+                    }
+                    mediaPlayer = new MediaPlayer();
+
+                    mediaPlayer.setDataSource(getApplicationContext(),songUri);
+                    mediaPlayer.prepareAsync();
+
+                    mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                        @Override
+                        public void onPrepared(MediaPlayer mp) {
+                            mp.start();
+                            timeline.setProgress(0);
+                            timeline.setMax(mediaPlayer.getDuration());
+                            timeline.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                                @Override
+                                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                                    if (fromUser)
+                                        mediaPlayer.seekTo(progress);
+                                }
+
+                                @Override
+                                public void onStartTrackingTouch(SeekBar seekBar) {
+
+                                }
+
+                                @Override
+                                public void onStopTrackingTouch(SeekBar seekBar) {
+
+                                }
+                            });
+                            Log.d("Prog", "run: " + mediaPlayer.getDuration());
+                            isPlaying = true;
+                            playPauseButton.setBackgroundResource(R.drawable.pause);
+
+                        }
+                    });
+
+
+
+
+                }catch (Exception e){}
+            }
+
+        };
+        myHandler.postDelayed(runnable,100);
+    }
+
+    public  void forwardSong(View veiw){
+
+
+
+        mediaPlayerSongPlay(positionOfLastSong+1,Uri.parse(_songs.get(positionOfLastSong+1).getSongUrl()));
+
+
+    }
+    public  void previousSong(View veiw){
+
+
+
+
+        mediaPlayerSongPlay(positionOfLastSong-1,Uri.parse(_songs.get(positionOfLastSong-1).getSongUrl()));
 
 
     }

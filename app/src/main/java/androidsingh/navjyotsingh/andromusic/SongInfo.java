@@ -1,5 +1,6 @@
 package androidsingh.navjyotsingh.andromusic;
-
+//By Navjyot singh
+//navjyot11singh Github
 public class SongInfo {
     private String Songname;
     private String Artistname;
